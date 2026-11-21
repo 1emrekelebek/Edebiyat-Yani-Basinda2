@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf7">
+  <meta name="description" content="Sakarya'nın edebî hafızasını mekânlar, yazarlar ve eserler üzerinden keşfet.">
+  <title>Edebiyat Yanı Başında — Sakarya'nın edebî hafızası</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+  <style>
+    :root {
+      --paper: #fbfaf7;
+      --white: #ffffff;
+      --ink: #20231f;
+      --muted: #6c7068;
+      --line: #e7e5de;
+      --soft: #f3f2ed;
+      --accent: #8a6b48;
+      --accent-dark: #604a32;
+      --green: #526c59;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: "DM Sans", Arial, sans-serif;
+      --shadow: 0 18px 60px rgba(31, 35, 30, .07);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }\n    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.65 var(--sans); }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    .wrap { width: min(1180px, calc(100% - 44px)); margin: 0 auto; }
+    .eyebrow { color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .19em; text-transform: uppercase; }
+    .serif { font-family: var(--serif); }
+    .topline { border-bottom: 1px solid var(--line); color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    .topline .wrap { min-height: 34px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .topline strong { color: var(--accent-dark); font-weight: 700; }
+    header { position: sticky; top: 0; z-index: 100; background: rgba(251,250,247,.93); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(231,229,222,.85); }
+    .nav { height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 22px; }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brandMark { width: 34px; height: 34px; border: 1px solid #c9b99f; border-radius: 50%; display: grid; place-items: center; color: var(--accent-dark); font: 600 19px var(--serif); }
+    .brandName { font: 600 19px/1.1 var(--serif); letter-spacing: -.02em; white-space: nowrap; }
+    .brandSub { display: block; margin-top: 5px; color: var(--muted); font: 600 8px var(--sans); letter-spacing: .18em; text-transform: uppercase; }
+    .navLinks { display: flex; align-items: center; gap: 27px; color: #555a52; font-size: 11px; font-weight: 700; }
+    .navLinks a:hover { color: var(--accent); }
+    .navCta { padding: 10px 15px; border: 1px solid #d7cbb9; border-radius: 999px; color: var(--accent-dark); }
+    .menuBtn { display: none; border: 1px solid var(--line); border-radius: 10px; background: white; padding: 8px 11px; color: var(--ink); }
+    .hero { padding: 83px 0 67px; overflow: hidden; }
+    .heroGrid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 60px; align-items: center; }
+    .hero h1 { max-width: 650px; margin: 18px 0 18px; font: 600 clamp(46px, 6.5vw, 78px)/1.03 var(--serif); letter-spacing: -.055em; }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .heroLead { max-width: 540px; color: var(--muted); font-size: 15px; line-height: 1.9; }
+    .heroActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: white; padding: 12px 18px; font-size: 11px; font-weight: 700; transition: .2s ease; }
+    .btn:hover { transform: translateY(-2px); background: #383d36; }
+    .btn.light { background: transparent; color: var(--ink); border-color: #d8d6ce; }
+    .btn.light:hover { border-color: var(--accent); color: var(--accent-dark); background: white; }
+    .heroArt { position: relative; min-height: 420px; border-radius: 4px; overflow: hidden; background: #ebece5; isolation: isolate; }
+    .heroArt:before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(250,250,246,.08), rgba(36,54,43,.1)); z-index: -1; }
+    .contour { position: absolute; inset: -10% -5%; width: 110%; height: 120%; opacity: .6; }
+    .heroArtLabel { position: absolute; left: 28px; bottom: 26px; right: 28px; display: flex; align-items: end; justify-content: space-between; gap: 15px; color: #29372e; }
+    .heroArtLabel strong { display: block; font: 600 28px/1.15 var(--serif); max-width: 240px; }
+    .heroArtLabel span { display: block; margin-top: 8px; color: #536254; font-size: 9px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    .artIndex { width: 58px; height: 58px; border: 1px solid #8b9a8b; border-radius: 50%; display: grid; place-items: center; flex: none; font: 17px var(--serif); }
+    .heroMeta { display: flex; align-items: center; gap: 22px; margin-top: 42px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .heroMeta strong { color: var(--ink); font: 600 22px var(--serif); display: block; }
+    .heroMeta span { display: block; }
+    section { padding: 84px 0; scroll-margin-top: 88px; }
+    .sectionHead { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
+    .sectionHead h2 { margin: 9px 0 0; font: 600 clamp(32px, 4.5vw, 49px)/1.12 var(--serif); letter-spacing: -.035em; }
+    .sectionHead p { max-width: 425px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.9; }
+    .mapSection { background: #f3f3ee; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .mapLayout { display: grid; grid-template-columns: 270px minmax(0,1fr); gap: 16px; align-items: stretch; }
+    .mapPanel { border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: var(--shadow); overflow: hidden; }
+    .mapIntro { padding: 23px 23px 18px; border-bottom: 1px solid var(--line); }
+    .mapIntro h3 { margin: 0 0 7px; font: 600 23px var(--serif); }
+    .mapIntro p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.8; }
+    .placeListEmpty { margin:0; padding:14px; color:var(--muted); font-size:13px; line-height:1.5; }\n    .placeListEmpty[hidden] { display:none; }\n    .placeList { padding: 14px; display: grid; gap: 9px; }
+    .placeButton { display: flex; width: 100%; gap: 12px; align-items: center; padding: 12px; text-align: left; border: 1px solid transparent; border-radius: 13px; background: #f8f8f5; color: var(--ink); transition: .18s ease; }
+    .placeButton:hover, .placeButton.active { border-color: #cfc3b2; background: #fbfaf7; }
+    .placeIcon { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #ebece5; color: var(--green); font-size: 16px; }
+    .placeButton strong { display: block; font: 600 14px var(--serif); }
+    .placeButton small { display: block; color: var(--muted); font-size: 9px; }
+    .mapNote { padding: 0 20px 20px; color: #777a72; font-size: 9px; line-height: 1.7; }
+    .mapFrame { position: relative; height: 620px; min-height: 530px; border: 1px solid #e0dfd7; border-radius: var(--radius); overflow: hidden; background: #e6e8e1; box-shadow: var(--shadow); }
+    #map { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; background: #e8ece5; }
+    .maplibregl-map { font-family: var(--sans); }
+    .mapToolkitLogo { position: absolute; left: 10px; bottom: 10px; z-index: 3; width: 104px; height: auto; padding: 3px 5px; border-radius: 4px; background: rgba(255,255,255,.92); }
+    .mapOverlay { position: absolute; top: 15px; left: 15px; z-index: 2; background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.95); border-radius: 999px; padding: 8px 12px; color: #4c574d; font-size: 9px; font-weight: 700; box-shadow: 0 4px 20px rgba(31,35,30,.1); }
+    .mapActions { position: absolute; right: 14px; top: 14px; z-index: 2; display: flex; gap: 7px; }
+    .mapAction { border: 1px solid #deded7; border-radius: 999px; background: rgba(255,255,255,.96); color: #39443b; padding: 9px 12px; font-size: 9px; font-weight: 700; box-shadow: 0 4px 20px rgba(31,35,30,.08); }
+    .mapStatus { position: absolute; left: 15px; top: 52px; z-index: 3; max-width: calc(100% - 30px); border-radius: 8px; background: rgba(255,255,255,.94); padding: 7px 10px; color: #62685f; font-size: 9px; box-shadow: 0 2px 10px rgba(0,0,0,.06); pointer-events: none; }
+    .placeDetail { position:absolute; z-index:8; top:14px; right:14px; bottom:14px; width:min(350px,calc(100% - 28px)); min-width:0; display:flex; flex-direction:column; }
+    .placeDetail[hidden] { display:none !important; }
+    .placeDetailCard { position:relative; min-width:0; height:100%; overflow:auto; background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 14px 45px rgba(25,31,25,.22); }
+    .detailClose { position:absolute; z-index:3; top:10px; right:10px; width:34px; height:34px; border:1px solid rgba(255,255,255,.8); border-radius:50%; background:rgba(255,255,255,.95); color:#263329; font-size:23px; line-height:1; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.12); }
+    .detailHero { position:relative; height:205px; overflow:hidden; background:#e6e9e1; }
+    .detailHero img { display:block; width:100%; height:100%; object-fit:cover; }
+    .detailHero:after { content:""; position:absolute; inset:45% 0 0; background:linear-gradient(transparent,rgba(20,29,23,.55)); pointer-events:none; }
+    .detailHeroLabel { position:absolute; z-index:1; left:17px; right:17px; bottom:13px; color:#fff; font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    .detailBody { padding:20px; }
+    .detailBody h3 { margin:6px 0 10px; font:600 25px/1.15 var(--serif); }
+    .detailBody p { margin:0 0 12px; color:var(--muted); font-size:11px; line-height:1.85; }
+    .detailMeta { display:grid; gap:9px; margin:16px 0; padding:13px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .detailMeta span { display:block; color:var(--muted); font-size:9px; }
+    .detailMeta strong { display:block; margin-top:2px; color:var(--ink); font-size:11px; }
+    .detailCredit { margin-top:12px !important; font-size:9px !important; }
+    .detailLinks { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .detailCard { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 21px; }
+    .detailCard h3 { margin: 6px 0 9px; font: 600 24px var(--serif); }
+    .detailCard p { color: var(--muted); font-size: 11px; line-height: 1.85; margin: 0; }
+    .archiveSlot { min-height: 150px; border: 1px dashed #c9c6bb; border-radius: 13px; background: #fafaf7; display: grid; place-items: center; text-align: center; padding: 18px; color: #777b70; }
+    .archiveSlot strong { display: block; color: #4d5d50; font: 600 16px var(--serif); }
+    .archiveSlot span { display: block; margin-top: 5px; max-width: 250px; font-size: 9px; line-height: 1.7; }
+    .detailLinks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .textLink { color: var(--accent-dark); font-size: 10px; font-weight: 700; border-bottom: 1px solid #cbbda9; padding-bottom: 3px; }
+    .writersSection { background: var(--paper); }
+    .portraitSlot img {
+      display:block; width:auto; height:auto; max-width:100%; max-height:165px;
+      object-fit:contain; position:relative; z-index:1; border-radius:8px;
+    }
+    .portraitSlot:has(img):before, .portraitSlot:has(img):after { display:none; }
+    .portraitSlot:has(img) { background:#f5f4ef; }
+    .writerGrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    .writerCard { display: grid; grid-template-columns: 156px 1fr; gap: 22px; min-height: 205px; padding: 19px; border: 1px solid var(--line); border-radius: var(--radius); background: white; text-align: left; color: var(--ink); box-shadow: 0 8px 30px rgba(31,35,30,.035); transition: .2s ease; }
+    .writerCard:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: #d4c6b2; }
+    .portraitSlot { height:165px; min-height:0; border-radius: 12px; background: #e9e9e2; display: grid; place-items: center; position: relative; overflow: hidden; }
+    .portraitSlot:before, .portraitSlot:after { content: ""; position: absolute; width: 180px; height: 180px; border: 1px solid rgba(85,103,85,.25); border-radius: 50%; }
+    .portraitSlot:after { width: 125px; height: 125px; }
+    .portraitInitial { position: relative; z-index: 1; font: 600 53px var(--serif); color: #536756; }
+    .portraitLabel { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; text-align: center; color: #6e766a; font-size: 7px; letter-spacing: .08em; text-transform: uppercase; }
+    .writerInfo { align-self: center; min-width: 0; }
+    .writerInfo .eyebrow { font-size: 8px; letter-spacing: .13em; }
+    .writerInfo h3 { margin: 7px 0 5px; font: 600 23px/1.12 var(--serif); }
+    .writerInfo p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.8; }
+    .writerOpen { display: inline-block; margin-top: 13px; color: var(--accent-dark); font-size: 9px; font-weight: 700; border-bottom: 1px solid #cbbda9; padding-bottom: 3px; }
+    .writerFootnote { margin-top: 16px; color: var(--muted); font-size: 9px; line-height: 1.7; }
+    .methodSection { background: #eef0e9; border-top: 1px solid #e3e5dc; border-bottom: 1px solid #e3e5dc; }
+    .methodGrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 13px; }
+    .methodCard { border: 1px solid #dfe2d8; border-radius: 16px; background: rgba(255,255,255,.75); padding: 21px; }
+    .methodNo { color: #9a7d59; font: 600 30px var(--serif); }
+    .methodCard h3 { margin: 9px 0 7px; font: 600 18px var(--serif); }
+    .methodCard p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.8; }
+    .aboutGrid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 60px; align-items: start; }
+    .aboutGrid h2 { margin: 9px 0 0; font: 600 clamp(32px, 4.5vw, 49px)/1.12 var(--serif); letter-spacing: -.035em; }
+    .aboutText { color: var(--muted); font-size: 12px; line-height: 2; }
+    .aboutText strong { color: var(--ink); }
+    .sourceList { display: grid; gap: 8px; margin-top: 20px; }
+    .sourceItem { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-top: 1px solid var(--line); padding: 11px 0; color: #555d52; font-size: 10px; }
+    .sourceItem span { color: var(--muted); font-size: 9px; text-align: right; }
+    footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted); font-size: 9px; }
+    .footerRow { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .footerBrand { font: 600 16px var(--serif); color: var(--ink); }
+    .modalBack { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 300; padding: 18px; background: rgba(24,28,24,.55); backdrop-filter: blur(5px); }
+    .modalBack.open { display: flex; }
+    .modal { position:relative; width:min(680px,100%); max-height:90vh; overflow:auto; padding:clamp(20px,4vw,32px); border-radius:22px; background:white; box-shadow:0 22px 80px rgba(0,0,0,.2); }
+    .writerPhotoFrame { width:fit-content; max-width:100%; min-height:0; max-height:none; margin:10px auto 22px 0; padding:0; display:flex; align-items:center; justify-content:flex-start; overflow:visible; border:0; border-radius:12px; background:transparent; }
+    .writerPhotoFrame[hidden] { display:none !important; }
+    .writerPhotoFrame img { display:block; width:auto; height:auto; max-width:min(100%,440px); max-height:min(46vh,420px); object-fit:contain; object-position:center; border-radius:12px; background:#f5f4ef; box-shadow:0 8px 28px rgba(31,35,30,.09); }
+    .writerModalMeta { display:flex; flex-wrap:wrap; gap:7px 16px; margin:0 0 12px; color:var(--muted); font-size:11px; }
+    .writerModalMeta span { display:inline-block; }
+    .modalClose { position: absolute; right: 16px; top: 16px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--ink); }
+    .modal h2 { margin: 8px 40px 8px 0; font: 600 31px var(--serif); }
+    .modal p { color: var(--muted); font-size: 12px; line-height: 1.9; }
+    .modal .modalSources { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); display: grid; gap: 9px; font-size: 10px; }
+    .modalSources a { color: var(--accent-dark); text-decoration: underline; text-underline-offset: 3px; }
+    .toast { position: fixed; left: 50%; bottom: 20px; z-index: 400; transform: translate(-50%,18px); opacity: 0; pointer-events: none; padding: 10px 15px; border-radius: 10px; background: #252c25; color: white; font-size: 10px; box-shadow: var(--shadow); transition: .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    @media (max-width: 900px) {
+      .heroGrid { gap: 32px; }
+      .mapLayout { grid-template-columns: 240px minmax(0,1fr); }
+      .writerCard { grid-template-columns: 120px 1fr; gap: 15px; padding: 14px; }
+      .portraitSlot { min-height: 150px; }
+      .writerInfo h3 { font-size: 20px; }
+    }
+    @media (max-width: 700px) {
+      .wrap { width: min(100% - 30px, 560px); }
+      .topline .wrap { justify-content: center; }
+      .topline .wrap span:last-child { display: none; }
+      .nav { height: 66px; }
+      .brandName { font-size: 17px; }
+      .menuBtn { display: block; }
+      .navLinks { display: none; position: absolute; top: 66px; left: 0; right: 0; padding: 16px 22px 20px; background: var(--paper); border-bottom: 1px solid var(--line); flex-direction: column; align-items: stretch; gap: 16px; }
+      .navLinks.open { display: flex; }
+      .navCta { text-align: center; }
+      .hero { padding: 52px 0 48px; }
+      .heroGrid { grid-template-columns: 1fr; gap: 30px; }
+      .hero h1 { font-size: clamp(46px, 12vw, 65px); }
+      .heroArt { min-height: 270px; }
+      .heroMeta { margin-top: 29px; gap: 18px; }
+      section { padding: 58px 0; }
+      .sectionHead { display: block; margin-bottom: 22px; }
+      .sectionHead p { margin-top: 13px; }
+      .mapLayout { grid-template-columns: 1fr; }
+      .mapFrame { height: 390px; min-height: 390px; grid-row: 1; }
+      .placeDetail { top:10px; right:10px; bottom:10px; width:min(340px,calc(100% - 20px)); }
+      .placeDetailCard { height:100%; }
+      .detailHero { height:180px; }
+      #map { min-height: 0; }
+      .mapPanel { grid-row: 2; }
+      .writerGrid { grid-template-columns: 1fr; }
+      .writerCard { grid-template-columns: 116px 1fr; }
+      .portraitSlot { height:auto; min-height:150px; padding:8px; }
+      .portraitSlot img { max-height:150px; max-width:100%; }
+      .writerPhotoFrame { margin-right:auto; }
+      .writerPhotoFrame img { max-width:100%; max-height:42vh; }
+      .methodGrid { grid-template-columns: 1fr; }
+      .aboutGrid { grid-template-columns: 1fr; gap: 20px; }
+      .footerRow { align-items: start; flex-direction: column; }
+    }
+    @media (max-width: 390px) {
+      .heroActions .btn { width: 100%; }
+      .mapActions { right: 8px; top: 8px; }
+      .mapAction { padding: 8px 9px; }
+      .writerCard { grid-template-columns: 94px 1fr; gap: 12px; padding: 11px; }
+      .portraitSlot { min-height: 142px; }
+      .portraitInitial { font-size: 43px; }
+      .writerInfo h3 { font-size: 18px; }
+      .modal { padding:20px 17px; border-radius:16px; }
+      .modal h2 { font-size:26px; }
+      .writerPhotoFrame img { max-height:38vh; }
+    }
+  
+    /* Yönetici alanı — harita stillerinden bağımsız */
+    .adminEntry { border: 0; background: transparent; color: var(--muted); font: 600 9px var(--sans); text-decoration: underline; text-underline-offset: 4px; padding: 6px 0; }
+    .adminEntry:hover { color: var(--accent-dark); }
+    .adminModalBack { position: fixed; inset: 0; z-index: 500; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(24,28,24,.62); backdrop-filter: blur(6px); }
+    .adminModalBack.open { display: flex; }
+    .adminModal { width: min(900px,100%); max-height: 92vh; overflow: auto; position: relative; padding: 28px; border-radius: 20px; background: white; box-shadow: 0 22px 80px rgba(0,0,0,.25); }
+    .adminTop { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+    .adminTop h2 { margin:6px 0 0; font:600 30px var(--serif); }
+    .adminClose { width:36px; height:36px; flex:none; border:1px solid var(--line); border-radius:50%; background:white; color:var(--ink); }
+    .adminStatus { margin:16px 0; padding:12px 14px; border-radius:11px; background:#f5f5f0; color:#596257; font-size:11px; line-height:1.7; overflow-wrap:anywhere; }
+    .adminStatus.error { background:#fff2ef; color:#8c392b; }
+    .adminStatus.success { background:#eef5ed; color:#426047; }
+    .adminActions { display:flex; flex-wrap:wrap; gap:9px; margin:14px 0; }
+    .adminBtn { border:1px solid #d8d6ce; border-radius:999px; background:white; color:var(--ink); padding:9px 14px; font-size:10px; font-weight:700; }
+    .adminBtn.primary { background:var(--ink); color:white; border-color:var(--ink); }
+    .adminBtn.danger { color:#963d32; border-color:#e6c9c3; }
+    .adminGrid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-top:18px; }
+    .adminBox { min-width:0; border:1px solid var(--line); border-radius:14px; padding:16px; }
+    .adminBox h3 { margin:0 0 10px; font:600 18px var(--serif); }
+    .adminHelp { color:var(--muted); font-size:10px; line-height:1.7; }
+    .adminList { display:grid; gap:8px; max-height:420px; overflow:auto; }
+    .adminRecord { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:10px; border:1px solid var(--line); border-radius:10px; background:#fbfaf7; }
+    .adminRecord strong { display:block; font-size:11px; overflow-wrap:anywhere; }
+    .adminRecord small { display:block; color:var(--muted); font-size:9px; margin-top:3px; overflow-wrap:anywhere; }
+    .adminRecord button { flex:none; border:1px solid var(--line); border-radius:8px; background:white; padding:6px 8px; font-size:9px; }
+    .adminEditor { width:100%; min-height:260px; resize:vertical; border:1px solid #dcdad2; border-radius:10px; padding:12px; color:var(--ink); background:#fdfdfb; font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .adminUser { font-size:10px; color:var(--muted); overflow-wrap:anywhere; }
+    @media (max-width:700px) { .adminModal { padding:20px; } .adminGrid { grid-template-columns:1fr; } .adminTop h2 { font-size:25px; } }
+
+  </style>
+</head>
+<body>
+  <div class="topline">
+    <div class="wrap"><span><strong>Sakarya</strong> · Edebiyatın izinde bir şehir</span><span>TÜBİTAK 2204-A araştırma projesi · İlk web sürümü</span></div>
+  </div>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#anasayfa" aria-label="Edebiyat Yanı Başında ana sayfa">
+        <span class="brandMark">E</span>
+        <span><span class="brandName">Edebiyat Yanı Başında</span><span class="brandSub">Şehrin içinde edebiyat</span></span>
+      </a>
+      <nav class="navLinks" id="navLinks">
+        <a href="#harita">Edebî harita</a>
+        <a href="#yazarlar">Yazarlar</a>
+        <a href="#yontem">Araştırma yöntemi</a>
+        <a href="#proje" class="navCta">Proje hakkında ↗</a>
+      </nav>
+      <button class="menuBtn" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <main id="anasayfa">
+    <section class="hero">
+      <div class="wrap">
+        <div class="heroGrid">
+          <div>
+            <div class="eyebrow">Sakarya'nın edebî hafızası</div>
+            <h1>Bir şehri,<br><em>satırların</em> izinde keşfet.</h1>
+            <p class="heroLead">Sakarya'nın yazarlar, şairler ve eserler aracılığıyla nasıl anlatıldığını; mekânların, hatıraların ve edebî metinlerin izini sürerek keşfet.</p>
+            <div class="heroActions">
+              <a class="btn" href="#harita">Haritayı keşfet <span aria-hidden="true">↗</span></a>
+              <a class="btn light" href="#yazarlar">Yazarları tanı</a>
+            </div>
+            <div class="heroMeta">
+              <div><strong>01</strong><span>İlk harita noktası</span></div>
+              <div><strong>02</strong><span>Araştırma profili</span></div>
+              <div><strong>∞</strong><span>Keşfedilecek hikâye</span></div>
+            </div>
+          </div>
+          <div class="heroArt" aria-label="Sakarya Nehri'ni temsil eden soyut harita çizimi">
+            <svg class="contour" viewBox="0 0 620 540" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <g stroke="#7C927E" stroke-width="1.15" opacity=".8">
+                <path d="M-35 90C82 4 183 24 260 89S407 165 655 54"/>
+                <path d="M-40 117C75 33 185 48 254 112S410 192 660 81"/>
+                <path d="M-45 145C72 61 180 74 246 137S410 221 665 108"/>
+                <path d="M-44 174C63 92 176 102 238 166S408 250 668 137"/>
+                <path d="M-40 207C56 124 165 136 229 197S405 280 666 169"/>
+                <path d="M-41 240C51 157 157 169 220 230S399 313 665 203"/>
+                <path d="M-50 285C47 202 148 207 211 269S390 352 670 246"/>
+                <path d="M-54 324C41 238 143 244 202 305S386 394 670 288"/>
+                <path d="M-56 365C34 279 137 283 193 344S381 435 674 330"/>
+                <path d="M-48 405C26 321 127 325 185 384S370 475 675 372"/>
+              </g>
+              <path d="M-8 375C73 326 104 245 177 242C248 238 249 327 319 328C390 329 386 208 461 177C514 155 562 178 642 114" stroke="#526C59" stroke-width="13" stroke-linecap="round" opacity=".82"/>
+              <path d="M-8 375C73 326 104 245 177 242C248 238 249 327 319 328C390 329 386 208 461 177C514 155 562 178 642 114" stroke="#EFF3E9" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 9" opacity=".9"/>
+              <circle cx="319" cy="328" r="19" fill="#FBFAF7" stroke="#526C59" stroke-width="2"/>
+              <circle cx="319" cy="328" r="5" fill="#526C59"/>
+            </svg>
+            <div class="heroArtLabel">
+              <div><strong>Şehrin hafızası,<br>mekânların içinde.</strong><span>Bir dijital edebiyat atlası</span></div>
+              <div class="artIndex">01 / 26</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mapSection" id="harita">
+      <div class="wrap">
+        <div class="sectionHead">
+          <div><div class="eyebrow">01 · Edebî coğrafya</div><h2>Metinlerin izini<br>haritada sür.</h2></div>
+          <p>Yayımlanmış kayıtları haritada keşfet; her konumun yazarını, eserini, edebî ilişkisini ve araştırma kaynaklarını incele.</p>
+        </div>
+        <div class="mapLayout">
+          <aside class="mapPanel">
+            <div class="mapIntro">
+              <div class="eyebrow">Keşif noktaları</div>
+              <h3>Her mekânın bir hikâyesi var.</h3>
+              <p>Yönetim panelinde yayımladığın ve koordinat eklediğin her kayıt burada görünür.</p>
+            </div>
+            <div class="placeList" id="placeList">
+              <p class="placeListEmpty" id="placeListEmpty">Yayımlanmış edebî mekânlar yükleniyor…</p>
+            </div>
+            <div class="mapNote">Haritada yalnızca koordinatı geçerli yayımlanmış kayıtlar gösterilir. Bir işarete veya listedeki mekâna dokunarak ayrıntıları aç.</div>
+          </aside>
+
+          <div class="mapFrame">
+            <div id="map" role="application" aria-label="Sakarya Nehri'nin haritadaki konumu"></div>
+            <div class="mapOverlay">● EDEBÎ HARİTA · SAKARYA</div>
+            <img class="mapToolkitLogo" src="https://www.maptoolkit.org/assets/maptoolkit-attribution.png" alt="Maptoolkit">
+            <div class="mapActions"><button class="mapAction" id="locateBtn" type="button">◎ Konumumu bul</button><button class="mapAction" id="zoomHomeBtn" type="button">Sakarya'ya dön</button></div>
+            <div class="mapStatus" id="mapStatus">Harita yükleniyor…</div>
+            <aside class="placeDetail" id="placeDetail" aria-live="polite" hidden>
+              <article class="placeDetailCard">
+                <button class="detailClose" id="closePlaceDetail" type="button" aria-label="Bilgi kartını kapat">×</button>
+              <div class="detailHero">
+                <img id="placeDetailImage" src="https://commons.wikimedia.org/wiki/Special:FilePath/TR_Sakarya_asv2021-10_img28_Sakarya_River.jpg?width=900" alt="Sakarya Nehri manzarası" loading="lazy" onerror="this.style.display='none';">
+                <div class="detailHeroLabel" id="placeDetailHeroLabel">Edebî mekân</div>
+              </div>
+              <div class="detailBody">
+                <div class="eyebrow" id="placeDetailEyebrow">İşaretli mekân · 01</div>
+                <h3 id="placeDetailTitle">Sakarya Nehri</h3>
+                <p id="placeDetailDescription">Sakarya Türküsü ile edebiyatın hafızasına yerleşen nehir. Haritadaki işaret, şiirin yazıldığı kesin noktayı değil, nehrin temsili konumunu gösterir.</p>
+                <div class="detailMeta">
+                  <div><span>Yazar</span><strong id="placeDetailAuthor">Necip Fazıl Kısakürek</strong></div>
+                  <div><span>Eser</span><strong id="placeDetailWork">Sakarya Türküsü</strong></div>
+                  <div><span>Konum</span><strong id="placeDetailLocation">Sakarya Nehri · Temsili referans</strong></div>
+                </div>
+                <p id="placeDetailRelation">Şairin nehirle kurduğu edebî bağ, mekânı şiirde tarih, insan ve kader üzerine düşünmenin merkezine taşır.</p>
+                <div class="detailLinks">
+                  <button class="textLink" id="openNecip" type="button">Yazar profilini aç ↗</button>
+                  <a class="textLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Kaynağı incele ↗</a>
+                </div>
+                
+              </div>
+            </article>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="writersSection" id="yazarlar">
+      <div class="wrap">
+        <div class="sectionHead">
+          <div><div class="eyebrow">02 · Yazarlar ve şairler</div><h2>Şehre kelimeleriyle<br>dokunanlar.</h2></div>
+          <p>Yazar profillerinde biyografi, Sakarya ile ilişki, ilgili eserler ve harita bağlantıları birlikte yer alacak. İlk sürümde araştırma kaynaklarıyla doğrulanabilen iki profil bulunuyor.</p>
+        </div>
+        <div class="writerGrid" id="writerGrid"><p class="writerFootnote">Yazar profilleri yükleniyor…</p></div>
+        <p class="writerFootnote">Yazar fotoğrafları ve biyografileri yönetici panelinden eklenir; yalnızca yayımlanan profiller burada gösterilir.</p>
+      </div>
+    </section>
+
+    <section class="methodSection" id="yontem">
+      <div class="wrap">
+        <div class="sectionHead">
+          <div><div class="eyebrow">03 · Araştırma yöntemi</div><h2>Her işaretin<br>bir kaynağı olacak.</h2></div>
+          <p>Bu proje yalnızca bir gezi haritası değildir. Edebî metin ile gerçek mekân arasındaki bağı araştırma kaynaklarıyla inceleyen, doğrulanabilir bir dijital katalogdur.</p>
+        </div>
+        <div class="methodGrid">
+          <article class="methodCard"><div class="methodNo">01</div><h3>Kaynağı bul</h3><p>Şiir, hikâye, roman, anı ve biyografiler taranır. Metnin baskısı, sayfası ve güvenilir kaynak bilgisi kaydedilir.</p></article>
+          <article class="methodCard"><div class="methodNo">02</div><h3>Mekânı doğrula</h3><p>Yer adı, tarihî fotoğraf ve koordinat bilgileri karşılaştırılır. Kesin olmayan noktalar yaklaşık veya temsili olarak işaretlenir.</p></article>
+          <article class="methodCard"><div class="methodNo">03</div><h3>Haritaya aktar</h3><p>Doğrulanmış içerik; yazar profili, eser, mekân açıklaması ve kaynak bağlantısıyla birlikte yayımlanır.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="proje">
+      <div class="wrap aboutGrid">
+        <div><div class="eyebrow">Proje hakkında</div><h2>Edebiyat,<br>yaşadığımız<br>yerin içinde.</h2></div>
+        <div>
+          <p class="aboutText"><strong>Edebiyat Yanı Başında</strong>, Sakarya'nın edebî eserlerdeki izlerini mekânsal bilgilerle bir araya getirmeyi amaçlayan bir TÜBİTAK 2204-A araştırma projesidir. Hedefimiz, okurun bir şehri yalnızca sokaklarıyla değil, o sokaklara ve doğal çevreye anlam kazandıran metinlerle de tanımasını sağlamaktır.</p>
+          <p class="aboutText">Yazar profilleri ve mekân kayıtları yönetici panelinden Supabase veritabanına eklenir. Fotoğraflar ayrı alanlarda saklanır; yayımlanan yazar profilleri bu bölümde otomatik görünür.</p>
+          <div class="sourceList">
+            <a class="sourceItem" href="https://www.sakarya.gov.tr/sakarya-nehri" target="_blank" rel="noopener noreferrer"><strong>Sakarya Valiliği · Sakarya Nehri</strong><span>Nehir ve Sakarya Türküsü bağlantısı ↗</span></a>
+            <a class="sourceItem" href="https://dergipark.org.tr/tr/pub/kusbd/article/501698" target="_blank" rel="noopener noreferrer"><strong>Sadi Gedik · Sakarya Türküsü incelemesi</strong><span>Kırıkkale Üniversitesi Sosyal Bilimler Dergisi ↗</span></a>
+            <a class="sourceItem" href="https://ataturkansiklopedisi.gov.tr/detay/206/Sait-Faik-Abas%C4%B1yan%C4%B1k-%281906-1954%29-" target="_blank" rel="noopener noreferrer"><strong>Atatürk Ansiklopedisi · Sait Faik</strong><span>Biyografi ve Adapazarı bilgisi ↗</span></a>
+            <a class="sourceItem" href="https://dahiti.dgfi.tum.de/en/24006/" target="_blank" rel="noopener noreferrer"><strong>DAHITI · Sakarya Nehri</strong><span>Temsili harita referans noktası ↗</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footerRow">
+      <div><div class="footerBrand">Edebiyat Yanı Başında</div><div>Sakarya'nın edebî hafızası · İlk web sürümü</div></div>
+      <div>Harita altyapısı © Maptoolkit · © OpenStreetMap contributors</div>
+      <button class="adminEntry" id="adminEntryBtn" type="button">Yönetici girişi</button>
+    </div>
+  </footer>
+
+  <div class="modalBack" id="writerModal" role="dialog" aria-modal="true" aria-labelledby="writerModalTitle">
+    <div class="modal">
+      <button class="modalClose" id="modalClose" type="button" aria-label="Kapat">×</button>
+      <div class="writerPhotoFrame" id="writerPhotoFrame" hidden><img id="writerModalPhoto" alt="Yazar fotoğrafı" loading="lazy"></div>
+      <div class="eyebrow" id="writerModalEyebrow">Yazar profili</div>
+      <h2 id="writerModalTitle"></h2>
+      <div class="writerModalMeta" id="writerModalMeta"></div>
+      <p id="writerModalBio"></p>
+      <p id="writerModalRelation"></p>
+      <div class="modalSources" id="writerModalSources"></div>
+      <button class="btn" id="modalMapBtn" type="button" hidden style="margin-top:18px">Sakarya Türküsü'nü haritada gör ↗</button>
+    </div>
+  </div>
+
+
+  <div id="singleFileAdmin" hidden style="position:fixed;inset:0;z-index:9999;background:#f7f7f2;">
+    <button id="singleFileAdminClose" type="button" aria-label="Yönetici alanını kapat" style="position:absolute;right:18px;top:14px;z-index:2;border:1px solid #ddd;border-radius:999px;background:#fff;padding:9px 14px;cursor:pointer;font:600 13px Arial,sans-serif;">Siteye dön ✕</button>
+    <iframe id="singleFileAdminFrame" title="Yönetici giriş ve yönetim paneli" style="display:block;width:100%;height:100%;border:0;background:#f7f7f2;"></iframe>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <style>#singleFileAdmin[hidden]{display:none!important}</style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.supabaseClient = window.supabaseClient || (window.supabase && window.supabase.createClient("https://ocniuxhkqdwwvomytuet.supabase.co", "sb_publishable_iClBXXJWCRRsZCKZoZIMXw_XXDQGtT0"));
+    const HOME_VIEW = { center: [30.4559, 40.8159], zoom: 10.8 };
+
+    const writers = {};
+    let writerProfiles = [];
+    const writerGrid = document.getElementById("writerGrid");
+    const writerPhoto = document.getElementById("writerModalPhoto");
+    const writerPhotoFrame = document.getElementById("writerPhotoFrame");
+    writerPhoto.addEventListener("error", () => { writerPhotoFrame.hidden = true; });
+    function renderWriterProfiles(rows) {
+      writerGrid.replaceChildren();
+      Object.keys(writers).forEach(key => delete writers[key]);
+      const published = (rows || []).filter(w => w.status === "published");
+      if (!published.length) { const p=document.createElement("p"); p.className="writerFootnote"; p.textContent="Henüz yayımlanmış yazar profili bulunmuyor."; writerGrid.append(p); return; }
+      published.forEach((w, i) => {
+        const id = String(w.id);
+        writers[id] = { eyebrow: [w.profession, w.years].filter(Boolean).join(" · ") || "Yazar profili", title: w.name, bio: w.bio || "", relation: w.sakarya_relation || "", photo: w.photo_url || "", sources: w.source_title && w.source_url ? [[w.source_title,w.source_url]] : [], isNecip: (w.name||"").toLocaleLowerCase("tr").includes("necip fazıl") };
+        const button=document.createElement("button"); button.className="writerCard"; button.type="button"; button.dataset.writer=id;
+        const portrait=document.createElement("span"); portrait.className="portraitSlot";
+        if(w.photo_url){const img=document.createElement("img");img.src=w.photo_url;img.alt=w.name+" fotoğrafı";portrait.append(img);}else{const initial=document.createElement("span");initial.className="portraitInitial";initial.textContent=(w.name||"Y").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toLocaleUpperCase("tr");portrait.append(initial);const label=document.createElement("span");label.className="portraitLabel";label.textContent="Fotoğraf eklenmedi";portrait.append(label);}
+        const info=document.createElement("span");info.className="writerInfo";const eyebrow=document.createElement("span");eyebrow.className="eyebrow";eyebrow.textContent=writers[id].eyebrow;const title=document.createElement("h3");title.textContent=w.name;const bio=document.createElement("p");bio.textContent=w.bio||w.sakarya_relation||"Yazar profili";const open=document.createElement("span");open.className="writerOpen";open.textContent="Profili incele ↗";info.append(eyebrow,title,bio,open);button.append(portrait,info);button.addEventListener("click",()=>openWriter(id));writerGrid.append(button);
+      });
+    }
+    async function loadWriterProfiles() {
+      try { const {data,error}=await window.supabaseClient.from("writer_profiles").select("*").eq("status","published").order("name"); if(error) throw error; renderWriterProfiles(data||[]); }
+      catch(error) { writerGrid.replaceChildren(); const p=document.createElement("p");p.className="writerFootnote";p.textContent="Yazar profilleri şu anda yüklenemedi. Yönetici panelinden veya veritabanı bağlantısından kontrol edin.";writerGrid.append(p);console.error("Yazar profilleri:",error); }
+    }
+
+
+    loadWriterProfiles();
+
+    const navLinks = document.getElementById("navLinks");
+    const menuBtn = document.getElementById("menuBtn");
+    menuBtn.addEventListener("click", function () {
+      const open = navLinks.classList.toggle("open");
+      menuBtn.setAttribute("aria-expanded", String(open));
+    });
+    navLinks.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        navLinks.classList.remove("open");
+        menuBtn.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(function () { toast.classList.remove("show"); }, 2800);
+    }
+
+    const writerModal = document.getElementById("writerModal");
+    function openWriter(id) {
+      const writer = writers[id]; if (!writer) return;
+      document.getElementById("writerModalEyebrow").textContent = writer.eyebrow;
+      document.getElementById("writerModalTitle").textContent = writer.title;
+      document.getElementById("writerModalBio").textContent = writer.bio;
+      document.getElementById("writerModalRelation").textContent = writer.relation;
+      const meta = document.getElementById("writerModalMeta");
+      meta.replaceChildren();
+      writer.eyebrow.split(" · ").filter(Boolean).forEach(value => {
+        const span=document.createElement("span"); span.textContent=value; meta.append(span);
+      });
+      writerPhotoFrame.hidden = !writer.photo;
+      writerPhoto.removeAttribute("src");
+      writerPhoto.alt = writer.title + " fotoğrafı";
+      if (writer.photo) writerPhoto.src = writer.photo;
+      const sourceBox = document.getElementById("writerModalSources"); sourceBox.replaceChildren();
+      writer.sources.forEach(function (source) { const a=document.createElement("a");a.href=source[1];a.target="_blank";a.rel="noopener noreferrer";a.textContent=source[0]+" ↗";sourceBox.appendChild(a); });
+      const mapButton = document.getElementById("modalMapBtn");
+      mapButton.hidden = !(typeof window.hasWriterMapRecord === "function" && window.hasWriterMapRecord(writer.title));
+      mapButton.textContent = "İlgili mekânı haritada gör ↗";
+      mapButton.dataset.writerName = writer.title;
+      writerModal.classList.add("open");
+    }
+
+    document.getElementById("openNecip").addEventListener("click", function () {
+      const match = Object.entries(writers).find(([, writer]) => writer.isNecip);
+      if (match) openWriter(match[0]);
+      else showToast("Necip Fazıl profili henüz yüklenemedi.");
+    });
+
+    document.getElementById("modalMapBtn").addEventListener("click", function () {
+      if (typeof window.focusWriterOnMap !== "function") {
+        mapStatus.textContent = "Harita kayıtları henüz yüklenmedi. Biraz sonra tekrar dene.";
+        return;
+      }
+      const moved = window.focusWriterOnMap(document.getElementById("modalMapBtn").dataset.writerName || "");
+      if (moved) {
+        writerModal.classList.remove("open");
+        document.getElementById("harita").scrollIntoView({ behavior: "smooth" });
+      }
+    });
+    document.getElementById("modalClose").addEventListener("click", function () { writerModal.classList.remove("open"); });
+    writerModal.addEventListener("click", function (event) {
+      if (event.target === writerModal) writerModal.classList.remove("open");
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") writerModal.classList.remove("open");
+    });
+
+    const mapStatus = document.getElementById("mapStatus");
+
+    function focusRiver() {
+      const map = window.literaryMap;
+      if (!map) {
+        mapStatus.textContent = "Harita hazırlanıyor…";
+        return;
+      }
+      if (typeof window.focusWriterOnMap === "function" &&
+          window.focusWriterOnMap("Necip Fazıl")) return;
+      map.flyTo({ center: HOME_VIEW.center, zoom: HOME_VIEW.zoom, speed: 0.8, essential: true });
+      mapStatus.textContent = "Sakarya genel görünümü gösteriliyor. Yayımlanmış ve koordinatı doğrulanmış bir edebî kayıt seç.";
+    }
+    window.focusRiver = focusRiver;
+
+    document.getElementById("zoomHomeBtn").addEventListener("click", function () {
+      const map = window.literaryMap;
+      if (map) map.flyTo({ center: HOME_VIEW.center, zoom: HOME_VIEW.zoom, speed: 0.8, essential: true });
+    });
+
+    document.getElementById("locateBtn").addEventListener("click", function () {
+      const map = window.literaryMap;
+      if (!map) {
+        mapStatus.textContent = "Harita hazırlanıyor; konum için birazdan tekrar dene.";
+        return;
+      }
+      if (!navigator.geolocation) {
+        showToast("Bu tarayıcı konum özelliğini desteklemiyor.");
+        return;
+      }
+      mapStatus.textContent = "Konum izni bekleniyor…";
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        if (window.userMapMarker) window.userMapMarker.remove();
+        window.userMapMarker = new window.maplibregl.Marker({ color: "#3977b8" })
+          .setLngLat([lon, lat])
+          .setPopup(new window.maplibregl.Popup({ offset: 24 }).setText("Bulunduğun konum"))
+          .addTo(map);
+        map.flyTo({ center: [lon, lat], zoom: 13, speed: 0.8, essential: true });
+        mapStatus.textContent = "Konumun haritada gösteriliyor.";
+      }, function (error) {
+        mapStatus.textContent = "Konum alınamadı. Tarayıcı ayarlarından konum iznini kontrol et.";
+        showToast(error.code === 1 ? "Konum izni verilmedi." : "Konum bilgisi şu anda alınamıyor.");
+      }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+    });
+
+    mapStatus.textContent = "Etkileşimli harita yükleniyor…";
+  </script>
+
+  <script>
+  (() => {
+    "use strict";
+    const embeddedAdminDocument = "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Yönetim | Edebiyat Yanı Başında</title><script src=\"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2\"><\/script><style>\n:root{--ink:#242720;--muted:#73766d;--paper:#f6f6f1;--line:#e5e6dd;--green:#355c48;--red:#a33d35}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.5 Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}.head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}.brand{font:600 23px Georgia,serif}.muted{color:var(--muted)}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 8px 30px #1f231e08}.login{max-width:440px;margin:8vh auto}.login h1{font:500 30px Georgia,serif}.field{display:grid;gap:6px;margin:13px 0}.field label{font-size:12px;font-weight:700}.field input,.field textarea,.field select{width:100%;padding:11px 12px;border:1px solid #d9dcd2;border-radius:9px;font:14px Arial;background:#fff}.field textarea{min-height:100px;resize:vertical}.btn{border:1px solid #d8dacf;border-radius:9px;background:#fff;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--green);border-color:var(--green);color:#fff}.danger{color:var(--red)}.status{padding:11px 13px;border-radius:9px;background:#f1f3ed;color:#596257;margin-top:14px;font-size:12px;overflow-wrap:anywhere}.status.error{background:#fff0ed;color:#923b30}.status.ok{background:#edf5ed;color:#356344}[hidden]{display:none!important}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.stat{padding:15px;border:1px solid var(--line);border-radius:12px;background:#fff}.stat b{display:block;font:26px Georgia,serif}.layout{display:grid;grid-template-columns: minmax(250px,.75fr) minmax(0,1.5fr);gap:16px}.list{display:grid;gap:8px;max-height:720px;overflow:auto}.row{border:1px solid var(--line);border-radius:10px;padding:11px;display:flex;gap:10px;justify-content:space-between;align-items:center}.row strong{display:block;font-size:13px}.row small{color:var(--muted);font-size:11px}.row button{padding:7px 9px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.wide{grid-column:1/-1}.preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.preview img{width:90px;height:75px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.help{font-size:11px;color:var(--muted);line-height:1.6}@media(max-width:760px){.wrap{padding:15px}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.head{align-items:flex-start;flex-direction:column}}\n</style></head><body><main class=\"wrap\"><header class=\"head\"><div><div class=\"brand\">Edebiyat Yanı Başında</div><div class=\"muted\">İçerik yönetim merkezi</div></div></header>\n<section class=\"card login\" id=\"login\"><h1>Yönetici girişi</h1><p class=\"muted\">Yalnızca yetkilendirilmiş yönetici hesapları erişebilir.</p><div class=\"field\"><label>E-posta adresi</label><input id=\"email\" type=\"email\" autocomplete=\"username\"></div><div class=\"field\"><label>Şifre</label><input id=\"password\" type=\"password\" autocomplete=\"current-password\"></div><button class=\"btn primary\" id=\"loginBtn\">Giriş yap</button><div class=\"status\" id=\"loginStatus\">Yönetici hesabınla giriş yap.</div></section>\n<section id=\"app\" hidden><div class=\"head\"><div><h1 style=\"font:500 30px Georgia;margin:0\">Yönetim paneli</h1><div class=\"muted\" id=\"userLabel\"></div></div><div class=\"toolbar\"><button class=\"btn\" id=\"refresh\">Yenile</button><button class=\"btn danger\" id=\"logout\">Güvenli çıkış</button></div></div><div class=\"stats\"><div class=\"stat\"><span class=\"muted\">Toplam kayıt</span><b id=\"total\">0</b></div><div class=\"stat\"><span class=\"muted\">Yayında</span><b id=\"published\">0</b></div><div class=\"stat\"><span class=\"muted\">Taslak</span><b id=\"draft\">0</b></div></div>\n<div class=\"layout\"><section class=\"card\"><div class=\"toolbar\" style=\"justify-content:space-between\"><h2 style=\"font:500 21px Georgia;margin:0 0 12px\">İçerikler</h2><button class=\"btn primary\" id=\"new\">+ Yeni kayıt</button></div><input id=\"search\" placeholder=\"Kayıtlarda ara…\" style=\"width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px\"><div class=\"list\" id=\"records\"></div></section>\n<section class=\"card\"><div class=\"toolbar\" style=\"justify-content:space-between\"><h2 id=\"formTitle\" style=\"font:500 21px Georgia;margin:0\">Yeni edebî kayıt</h2><span class=\"help\">Alanları doldur, taslak kaydet veya yayımla.</span></div><form id=\"editor\"><div class=\"formgrid\">\n<div class=\"field\"><label>Kayıt başlığı *</label><input name=\"title\" required placeholder=\"Örn. Sakarya Türküsü\"></div><div class=\"field\"><label>Yazar</label><input name=\"author\" placeholder=\"Yazarın adı\"></div>\n<div class=\"field\"><label>Eser adı</label><input name=\"work_title\" placeholder=\"Eserin adı\"></div><div class=\"field\"><label>Kategori</label><input name=\"category\" placeholder=\"Şiir, roman, anı…\"></div>\n<div class=\"field wide\"><label>Kısa açıklama</label><textarea name=\"description\" placeholder=\"Kaydın kısa tanıtımı\"></textarea></div><div class=\"field wide\"><label>Edebî metin / alıntı</label><textarea name=\"literary_text\" placeholder=\"İlgili metin veya alıntı\"></textarea></div>\n<div class=\"field\"><label>Mekân</label><input name=\"place_name\" placeholder=\"Mekân adı\"></div><div class=\"field\"><label>İlçe</label><input name=\"district\" placeholder=\"İlçe\"></div>\n<div class=\"field\"><label>Enlem</label><input name=\"latitude\" type=\"number\" step=\"any\" placeholder=\"40.0000\"></div><div class=\"field\"><label>Boylam</label><input name=\"longitude\" type=\"number\" step=\"any\" placeholder=\"30.0000\"></div>\n<div class=\"field\"><label>Tarih / dönem</label><input name=\"period\" placeholder=\"Örn. 1950'ler\"></div><div class=\"field\"><label>Etiketler</label><input name=\"tags\" placeholder=\"Sakarya, şiir, nehir\"></div>\n<div class=\"field\"><label>Kaynak adı</label><input name=\"source_title\" placeholder=\"Kaynağın adı\"></div><div class=\"field\"><label>Kaynak bağlantısı</label><input name=\"source_url\" type=\"url\" placeholder=\"https://…\"></div>\n<div class=\"field wide\"><label>Kapak görseli</label><input id=\"image\" type=\"file\" accept=\"image/png,image/jpeg,image/webp\"><div class=\"preview\" id=\"preview\"></div><div class=\"help\">JPG, PNG veya WEBP. En fazla 8 MB.</div></div>\n<div class=\"field wide\"><label>Ek görseller</label><input id=\"gallery\" type=\"file\" accept=\"image/png,image/jpeg,image/webp\" multiple><div class=\"help\">Birden fazla fotoğraf ekleyebilirsin.</div></div>\n<div class=\"field\"><label>Yayın durumu</label><select name=\"status\"><option value=\"draft\">Taslak</option><option value=\"published\">Yayımla</option></select></div>\n</div><div class=\"toolbar\"><button class=\"btn primary\" type=\"submit\" id=\"save\">Kaydet</button><button class=\"btn\" type=\"button\" id=\"clear\">Formu temizle</button><button class=\"btn danger\" type=\"button\" id=\"delete\" hidden>Kaydı sil</button></div></form><div class=\"status\" id=\"workStatus\">İçerik eklemeye hazırsın.</div><div class=\"card\" style=\"margin-top:18px\"><h2 style=\"font:500 21px Georgia;margin:0 0 8px\">Yazar profilleri</h2><p class=\"help\">Yazar fotoğrafı, biyografi ve Sakarya bağlantısını buradan yönet. Fotoğraflar literary-images deposuna yüklenir.</p><div class=\"layout\"><div><div class=\"list\" id=\"writerRecords\"></div></div><div><form id=\"writerEditor\"><input type=\"hidden\" name=\"id\"><div class=\"formgrid\"><div class=\"field wide\"><label>Yazar adı *</label><input name=\"name\" required placeholder=\"Yazarın adı soyadı\"></div><div class=\"field\"><label>Unvan / tür</label><input name=\"profession\" placeholder=\"Şair, hikâyeci…\"></div><div class=\"field\"><label>Yaşam yılları</label><input name=\"years\" placeholder=\"1904–1983\"></div><div class=\"field wide\"><label>Kısa biyografi</label><textarea name=\"bio\" placeholder=\"Yazar hakkında doğrulanmış bilgi\"></textarea></div><div class=\"field wide\"><label>Sakarya ile edebî / biyografik bağlantısı</label><textarea name=\"sakarya_relation\" placeholder=\"Sakarya ile ilişkisi\"></textarea></div><div class=\"field wide\"><label>Yazar fotoğrafı</label><input id=\"writerPhoto\" type=\"file\" accept=\"image/png,image/jpeg,image/webp\"><div class=\"preview\" id=\"writerPreview\"></div><div class=\"help\">JPG, PNG veya WEBP · en fazla 8 MB. Kullanım izni olan fotoğraf yükle.</div></div><div class=\"field\"><label>Kaynak adı</label><input name=\"source_title\"></div><div class=\"field\"><label>Kaynak bağlantısı</label><input name=\"source_url\" type=\"url\" placeholder=\"https://…\"></div><div class=\"field\"><label>Yayın durumu</label><select name=\"status\"><option value=\"draft\">Taslak</option><option value=\"published\">Yayımla</option></select></div></div><div class=\"toolbar\"><button class=\"btn primary\" type=\"submit\" id=\"saveWriter\">Yazarı kaydet</button><button class=\"btn\" type=\"button\" id=\"clearWriter\">Yeni yazar</button><button class=\"btn danger\" type=\"button\" id=\"deleteWriter\" hidden>Yazarı sil</button></div></form><div class=\"status\" id=\"writerStatus\">Yazar profili eklemeye hazırsın.</div></div></div></div></section></div></section></main>\n<script>(()=>{'use strict';const SUPABASE_URL='https://ocniuxhkqdwwvomytuet.supabase.co',KEY='sb_publishable_iClBXXJWCRRsZCKZoZIMXw_XXDQGtT0',db=window.supabase.createClient(SUPABASE_URL,KEY);const $=id=>document.getElementById(id);let user=null,rows=[],editing=null,imageUrl=null,galleryUrls=[];const say=(id,msg,kind='')=>{$(id).textContent=msg;$(id).className='status '+kind};const admin=async u=>{const {data,error}=await db.from('site_admins').select('user_id').eq('user_id',u.id).maybeSingle();if(error||!data){user=null;say('loginStatus',error?'Yetki kontrolü: '+error.message:'Bu hesap yönetici olarak yetkilendirilmemiş.','error');return false;}user=u;$('login').hidden=true;$('app').hidden=false;$('userLabel').textContent=u.email||'Yönetici';await load();await loadWriters();return true};async function signIn(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password)return say('loginStatus','E-posta ve şifreyi doldur.','error');$('loginBtn').disabled=true;say('loginStatus','Giriş yapılıyor…');const {data,error}=await db.auth.signInWithPassword({email,password});$('loginBtn').disabled=false;if(error)return say('loginStatus','Giriş başarısız: '+error.message,'error');await admin(data.user)}async function load(){say('workStatus','Kayıtlar yükleniyor…');const {data,error}=await db.from('literary_records').select('*').order('created_at',{ascending:false});if(error)return say('workStatus','Kayıtlar alınamadı: '+error.message,'error');rows=data||[];$('total').textContent=rows.length;$('published').textContent=rows.filter(x=>x.status==='published').length;$('draft').textContent=rows.filter(x=>x.status!=='published').length;render();say('workStatus',rows.length+' kayıt yüklendi.','ok')}function render(){const q=$('search').value.toLocaleLowerCase('tr');const box=$('records');box.replaceChildren();rows.filter(r=>(r.title||'').toLocaleLowerCase('tr').includes(q)||(r.author||'').toLocaleLowerCase('tr').includes(q)).forEach(r=>{const item=document.createElement('div');item.className='row';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=r.title;const small=document.createElement('small');small.textContent=(r.author||'Yazar belirtilmemiş')+' · '+(r.status==='published'?'Yayında':'Taslak');info.append(strong,small);const b=document.createElement('button');b.className='btn';b.textContent='Düzenle';b.onclick=()=>edit(r);item.append(info,b);box.append(item)});if(!box.children.length)box.textContent='Aramana uygun kayıt bulunamadı.'}function fresh(){editing=null;imageUrl=null;galleryUrls=[];$('editor').reset();$('preview').replaceChildren();$('formTitle').textContent='Yeni edebî kayıt';$('delete').hidden=true}function edit(r){editing=r.id;imageUrl=r.image_url||null;galleryUrls=r.gallery_urls||[];for(const k of ['title','author','work_title','category','description','literary_text','place_name','district','latitude','longitude','period','source_title','source_url','status'])$('editor').elements[k].value=r[k]??'';$('editor').elements.tags.value=Array.isArray(r.tags)?r.tags.join(', '):'';$('formTitle').textContent='Kaydı düzenle';$('delete').hidden=false;preview()}function preview(){const box=$('preview');box.replaceChildren();[imageUrl,...galleryUrls].filter(Boolean).forEach(url=>{const img=document.createElement('img');img.src=url;box.append(img)})}async function upload(file){if(!file)return null;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024)throw Error('Görsel JPG, PNG veya WEBP olmalı ve 8 MB sınırını aşmamalı.');const path=(user.id+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_'));const {error}=await db.storage.from('literary-images').upload(path,file,{upsert:false,contentType:file.type});if(error)throw error;return db.storage.from('literary-images').getPublicUrl(path).data.publicUrl}async function save(e){e.preventDefault();if(!user)return say('workStatus','Önce giriş yap.','error');$('save').disabled=true;try{const f=$('editor').elements,payload={};for(const k of ['title','author','work_title','category','description','literary_text','place_name','district','period','source_title','source_url','status'])payload[k]=f[k].value.trim()||null;payload.latitude=f.latitude.value?Number(f.latitude.value):null;payload.longitude=f.longitude.value?Number(f.longitude.value):null;payload.tags=f.tags.value.split(',').map(x=>x.trim()).filter(Boolean);const newImage=await upload($('image').files[0]);if(newImage)imageUrl=newImage;const files=Array.from($('gallery').files);for(const file of files){const url=await upload(file);if(url)galleryUrls.push(url)}payload.image_url=imageUrl;payload.gallery_urls=galleryUrls;let result;if(editing!==null)result=await db.from('literary_records').update(payload).eq('id',editing);else result=await db.from('literary_records').insert(payload);if(result.error)throw result.error;say('workStatus',editing!==null?'Kayıt güncellendi.':'Yeni kayıt eklendi.','ok');fresh();await load()}catch(err){say('workStatus','Kaydedilemedi: '+err.message,'error')}finally{$('save').disabled=false}}async function remove(){if(editing===null||!confirm('Bu kayıt kalıcı olarak silinsin mi?'))return;const {error}=await db.from('literary_records').delete().eq('id',editing);if(error)return say('workStatus','Silinemedi: '+error.message,'error');fresh();await load()}async function logout(){await db.auth.signOut();user=null;rows=[];$('app').hidden=true;$('login').hidden=false;$('password').value='';say('loginStatus','Oturum kapatıldı.')} let writerPhotoUrl=null;let writerRows=[];function writerFresh(){const f=$('writerEditor');f.reset();f.elements.id.value='';writerPhotoUrl=null;$('writerPreview').replaceChildren();$('deleteWriter').hidden=true;$('writerStatus').textContent='Yeni yazar profili.'}function writerPreview(){const box=$('writerPreview');box.replaceChildren();if(writerPhotoUrl){const img=document.createElement('img');img.src=writerPhotoUrl;box.append(img)}}async function loadWriters(){const {data,error}=await db.from('writer_profiles').select('*').order('name');if(error){say('writerStatus','Yazarlar yüklenemedi: '+error.message,'error');return}writerRows=data||[];const box=$('writerRecords');box.replaceChildren();writerRows.forEach(w=>{const item=document.createElement('div');item.className='row';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=w.name;const small=document.createElement('small');small.textContent=(w.profession||'Yazar')+' · '+(w.status==='published'?'Yayında':'Taslak');info.append(strong,small);const b=document.createElement('button');b.className='btn';b.textContent='Düzenle';b.onclick=()=>{const f=$('writerEditor');for(const k of ['id','name','profession','years','bio','sakarya_relation','source_title','source_url','status'])f.elements[k].value=w[k]??'';writerPhotoUrl=w.photo_url||null;writerPreview();$('deleteWriter').hidden=false;say('writerStatus','Yazar profili düzenleniyor.');};item.append(info,b);box.append(item)});if(!box.children.length)box.textContent='Henüz yazar profili yok.'}async function saveWriter(e){e.preventDefault();const f=$('writerEditor');$('saveWriter').disabled=true;try{const file=$('writerPhoto').files[0];if(file){const path=user.id+'/writer-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024)throw Error('Fotoğraf JPG, PNG veya WEBP olmalı; 8 MB sınırı var.');const up=await db.storage.from('literary-images').upload(path,file,{upsert:false,contentType:file.type});if(up.error)throw up.error;writerPhotoUrl=db.storage.from('literary-images').getPublicUrl(path).data.publicUrl}const payload={name:f.elements.name.value.trim(),profession:f.elements.profession.value.trim()||null,years:f.elements.years.value.trim()||null,bio:f.elements.bio.value.trim()||null,sakarya_relation:f.elements.sakarya_relation.value.trim()||null,photo_url:writerPhotoUrl,source_title:f.elements.source_title.value.trim()||null,source_url:f.elements.source_url.value.trim()||null,status:f.elements.status.value};if(!payload.name)throw Error('Yazar adı zorunludur.');const id=f.elements.id.value;const res=id?await db.from('writer_profiles').update(payload).eq('id',id):await db.from('writer_profiles').insert(payload);if(res.error)throw res.error;say('writerStatus','Yazar profili kaydedildi.','ok');writerFresh();await loadWriters()}catch(err){say('writerStatus','Kaydedilemedi: '+err.message,'error')}finally{$('saveWriter').disabled=false}}async function deleteWriter(){const id=$('writerEditor').elements.id.value;if(!id||!confirm('Bu yazar profili silinsin mi?'))return;const {error}=await db.from('writer_profiles').delete().eq('id',id);if(error)return say('writerStatus','Silinemedi: '+error.message,'error');writerFresh();await loadWriters()}$('writerEditor').onsubmit=saveWriter;$('clearWriter').onclick=writerFresh;$('deleteWriter').onclick=deleteWriter;$('writerPhoto').onchange=()=>{const file=$('writerPhoto').files[0];if(file){const url=URL.createObjectURL(file);$('writerPreview').replaceChildren();const img=document.createElement('img');img.src=url;$('writerPreview').append(img)}};$('loginBtn').onclick=signIn;$('password').onkeydown=e=>{if(e.key==='Enter')signIn()};$('editor').onsubmit=save;$('new').onclick=fresh;$('clear').onclick=fresh;$('delete').onclick=remove;$('refresh').onclick=load;$('logout').onclick=logout;$('search').oninput=render;$('image').onchange=async()=>{try{const f=$('image').files[0];if(f){const url=window.URL.createObjectURL(f);$('preview').replaceChildren();const img=document.createElement('img');img.src=url;$('preview').append(img)}}catch(e){say('workStatus',e.message,'error')}};(async()=>{const {data}=await db.auth.getSession();if(data.session)await admin(data.session.user)})();})();<\/script></body></html>";
+    const layer = document.getElementById("singleFileAdmin");
+    const frame = document.getElementById("singleFileAdminFrame");
+    const openButton = document.getElementById("adminEntryBtn");
+    const closeButton = document.getElementById("singleFileAdminClose");
+    openButton.addEventListener("click", () => {
+      // Her açılışta yönetici giriş belgesini yeniden yükle;
+      // iframe'in yanlışlıkla ana siteye gitmiş eski durumunu koruma.
+      frame.srcdoc = embeddedAdminDocument;
+      frame.dataset.loaded = "true";
+      layer.hidden = false;
+      document.body.style.overflow = "hidden";
+      closeButton.focus();
+    });
+    closeButton.addEventListener("click", () => {
+      layer.hidden = true;
+      document.body.style.overflow = "";
+      openButton.focus();
+    });
+  })();
+  </script>
+
+
+
+
+  <script type="module">
+    import * as maplibregl from "https://cdn.jsdelivr.net/npm/maplibre-gl@6.16.0/dist/maplibre-gl.mjs";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://ocniuxhkqdwwvomytuet.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_iClBXXJWCRRsZCKZoZIMXw_XXDQGtT0";
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const mapStatus = document.getElementById("mapStatus");
+    const DEFAULT_CENTER = [30.4559, 40.8159];
+    const map = new maplibregl.Map({
+      container: "map",
+      style: "https://styles.maptoolkit.org/light.json",
+      center: DEFAULT_CENTER,
+      zoom: 10.8,
+      attributionControl: false,
+      maxZoom: 19,
+      minZoom: 4,
+      cooperativeGestures: true
+    });
+
+    window.literaryMap = map;
+    window.maplibregl = maplibregl;
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+    map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
+
+    const detailPanel = document.getElementById("placeDetail");
+    const placeList = document.getElementById("placeList");
+    const placeListEmpty = document.getElementById("placeListEmpty");
+    let activePlaceButton = null;
+    const markers = [];
+    const validCoordinate = (r) =>
+      r.latitude !== null && r.latitude !== undefined && r.latitude !== "" &&
+      r.longitude !== null && r.longitude !== undefined && r.longitude !== "" &&
+      Number.isFinite(Number(r.latitude)) &&
+      Number.isFinite(Number(r.longitude)) &&
+      Number(r.latitude) >= 39.5 && Number(r.latitude) <= 42 &&
+      Number(r.longitude) >= 29 && Number(r.longitude) <= 32;
+
+    function setText(id, value, fallback = "") {
+      document.getElementById(id).textContent = value || fallback;
+    }
+
+    function openRecord(record) {
+      detailPanel.hidden = false;
+      if (activePlaceButton) activePlaceButton.classList.add("active");
+      setText("placeDetailEyebrow", record.category || "Edebî mekân");
+      setText("placeDetailHeroLabel", [record.place_name, record.category].filter(Boolean).join(" · ") || "Edebî mekân");
+      setText("placeDetailTitle", record.title, "Başlıksız kayıt");
+      setText("placeDetailDescription", record.description, "Bu kayıt için henüz kısa açıklama eklenmemiş.");
+      setText("placeDetailAuthor", record.author, "Belirtilmemiş");
+      setText("placeDetailWork", record.work_title, "Belirtilmemiş");
+      setText("placeDetailLocation", [record.place_name, record.district].filter(Boolean).join(" · "), "Konum belirtilmemiş");
+      setText("placeDetailRelation", record.literary_text, "Bu kayıt için edebî metin veya alıntı eklenmemiş.");
+
+      const image = document.getElementById("placeDetailImage");
+      if (record.image_url) {
+        image.src = record.image_url;
+        image.alt = record.place_name || record.title || "Edebî mekân görseli";
+        image.style.display = "";
+      } else {
+        image.removeAttribute("src");
+        image.style.display = "none";
+      }
+
+      const writerLink = document.getElementById("openNecip");
+      if (writerLink) writerLink.hidden = !(record.author || "").toLocaleLowerCase("tr").includes("necip fazıl");
+      const source = document.querySelector("#placeDetail .detailLinks a");
+      if (source) {
+        if (record.source_url) {
+          source.href = record.source_url;
+          source.textContent = record.source_title || "Kaynağı incele";
+          source.hidden = false;
+        } else {
+          source.hidden = true;
+        }
+      }
+
+      if (validCoordinate(record)) {
+        map.easeTo({
+          center: [Number(record.longitude), Number(record.latitude)],
+          zoom: Math.max(map.getZoom(), 13),
+          duration: 550
+        });
+      }
+    }
+
+    function closePlaceDetail() {
+      detailPanel.hidden = true;
+      if (activePlaceButton) activePlaceButton.classList.remove("active");
+      activePlaceButton = null;
+    }
+    document.getElementById("closePlaceDetail").addEventListener("click", closePlaceDetail);
+
+    async function loadLiteraryRecords() {
+      mapStatus.textContent = "Yayınlanmış edebî kayıtlar yükleniyor…";
+      const { data, error } = await db
+        .from("literary_records")
+        .select("id,title,author,work_title,category,description,literary_text,place_name,district,latitude,longitude,source_title,source_url,image_url,gallery_urls,status")
+        .eq("status", "published")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Supabase kayıtları alınamadı:", error);
+        mapStatus.textContent = "Kayıtlar yüklenemedi: " + error.message;
+        return;
+      }
+
+      markers.forEach(marker => marker.remove());
+      markers.length = 0;
+      placeList.querySelectorAll(".placeButton").forEach(button => button.remove());
+      const records = data || [];
+      const located = records.filter(validCoordinate);
+      window.publishedLocatedLiteraryRecords = located;
+
+      window.hasWriterMapRecord = function (writerName) {
+        const needle = (writerName || "").toLocaleLowerCase("tr").trim();
+        if (!needle) return false;
+        return located.some(record => (record.author || "").toLocaleLowerCase("tr").includes(needle));
+      };
+
+      window.focusWriterOnMap = function (writerName) {
+        const needle = (writerName || "").toLocaleLowerCase("tr");
+        const match = located.find(record =>
+          (record.author || "").toLocaleLowerCase("tr").includes(needle)
+        );
+        if (!match) {
+          mapStatus.textContent = "Bu yazarla ilişkili, yayımlanmış ve koordinatı geçerli bir mekân kaydı bulunamadı. Önce edebî mekân kaydını yayımla ve koordinatlarını kontrol et.";
+          return false;
+        }
+        openRecord(match);
+        map.flyTo({
+          center: [Number(match.longitude), Number(match.latitude)],
+          zoom: Math.max(map.getZoom(), 13),
+          speed: 0.8,
+          essential: true
+        });
+        return true;
+      };
+
+      if (placeListEmpty) {
+        placeListEmpty.hidden = located.length > 0;
+        placeListEmpty.textContent = located.length ? "" :
+          (records.length ? "Kayıtlar bulundu ancak geçerli koordinatları yok." : "Henüz yayımlanmış mekân kaydı yok.");
+      }
+
+      located.forEach((record, index) => {
+        const listButton = document.createElement("button");
+        listButton.type = "button";
+        listButton.className = "placeButton";
+        const icon = document.createElement("span");
+        icon.className = "placeIcon";
+        icon.textContent = "⌁";
+        const copy = document.createElement("span");
+        const title = document.createElement("strong");
+        title.textContent = record.place_name || record.title || "Adsız mekân";
+        const subtitle = document.createElement("small");
+        subtitle.textContent = [record.author, record.work_title].filter(Boolean).join(" · ") || "Edebî kayıt";
+        copy.append(title, subtitle);
+        listButton.append(icon, copy);
+        listButton.addEventListener("click", () => {
+          if (activePlaceButton) activePlaceButton.classList.remove("active");
+          activePlaceButton = listButton;
+          openRecord(record);
+          listButton.classList.add("active");
+        });
+        placeList.appendChild(listButton);
+
+        const marker = new maplibregl.Marker({ color: "#8a6b48" })
+          .setLngLat([Number(record.longitude), Number(record.latitude)])
+          .addTo(map);
+        const el = marker.getElement();
+        el.setAttribute("role", "button");
+        el.setAttribute("tabindex", "0");
+        el.setAttribute("aria-label", (record.title || "Edebî kayıt") + " ayrıntılarını göster");
+        el.style.cursor = "pointer";
+        el.addEventListener("click", () => {
+          if (activePlaceButton) activePlaceButton.classList.remove("active");
+          activePlaceButton = listButton;
+          openRecord(record);
+          listButton.classList.add("active");
+        });
+        el.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            if (activePlaceButton) activePlaceButton.classList.remove("active");
+            activePlaceButton = listButton;
+            openRecord(record);
+            listButton.classList.add("active");
+          }
+        });
+        markers.push(marker);
+      });
+
+      const invalidCount = records.length - located.length;
+      if (!records.length) {
+        mapStatus.textContent = "Henüz yayımlanmış kayıt yok. Yönetim panelinden kayıt ekleyip yayımlayabilirsin.";
+      } else if (invalidCount) {
+        mapStatus.textContent = `${located.length} kayıt haritada gösteriliyor. ${invalidCount} kaydın koordinatı eksik veya Sakarya dışı/geçersiz; yönetim panelinden düzelt.`;
+      } else {
+        mapStatus.textContent = `${located.length} edebî mekân haritada gösteriliyor. Bir işarete dokun.`;
+      }
+    }
+
+    map.on("load", loadLiteraryRecords);
+    map.on("error", event => {
+      if (event?.error) console.warn("Harita kaynağı uyarısı:", event.error);
+    });
+
+    window.setTimeout(() => {
+      if (!map.loaded()) {
+        mapStatus.textContent = "Yedek harita kaynağı deneniyor…";
+        map.setStyle("https://tiles.openfreemap.org/styles/positron");
+        map.once("style.load", loadLiteraryRecords);
+      }
+    }, 12000);
+
+    document.getElementById("zoomHomeBtn").addEventListener("click", () => {
+      map.flyTo({ center: DEFAULT_CENTER, zoom: 10.8, speed: 0.8 });
+    });
+    document.getElementById("locateBtn").addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        mapStatus.textContent = "Tarayıcı konum özelliğini desteklemiyor.";
+        return;
+      }
+      mapStatus.textContent = "Konum izni bekleniyor…";
+      navigator.geolocation.getCurrentPosition(position => {
+        const point = [position.coords.longitude, position.coords.latitude];
+        new maplibregl.Marker({ color: "#3977b8" }).setLngLat(point)
+          .setPopup(new maplibregl.Popup({ offset: 24 }).setText("Bulunduğun konum"))
+          .addTo(map);
+        map.flyTo({ center: point, zoom: 13 });
+        mapStatus.textContent = "Konumun haritada gösteriliyor.";
+      }, () => {
+        mapStatus.textContent = "Konum alınamadı. Tarayıcı konum iznini kontrol et.";
+      }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+    });
+    map.on("resize", () => map.resize());
+    window.addEventListener("resize", () => map.resize());
+    window.setTimeout(() => map.resize(), 300);
+  </script>
+
+</body>
+</html>
